@@ -18,8 +18,8 @@ app.post('/api/signup', authModule.createNewUser);
 
 app.post('/api/new-book', BookModule.createBook);
 
-app.post('/api/books', BookModule.getAllBooks);
-
 app.post('/api/order-item', OrderModule.addOrderItem);
 
-app.post('/api/orders', OrderModule.getAllOrderItems);
+app.get('/api/orders', OrderModule.getAllOrderItems);
+
+app.get('/api/books', BookModule.getAllBooks);
