@@ -1,10 +1,11 @@
 const db = require('../db');
+const { v4: uuidv4 } = require('uuid');
 
 // Create a new book
 exports.createBook = async (req, res) => {
     // Render a form or gather input for book details (e.g., title, price, publication date, format type, language type, publisher ID, supplier ID)
     // Retrieve the details from the form or request body
-    const { title, price, publication_date, format_type, language_type, publisher_id, sup_id } = req.body;
+    const { title, price, publication_date, format_type, language_type, user_id, sup_id } = req.body;
 
     try {
         const book = {
@@ -14,7 +15,7 @@ exports.createBook = async (req, res) => {
             publication_date,
             format_type,
             language_type,
-            publisher_id,
+            user_id,
             sup_id
         };
 
@@ -27,28 +28,15 @@ exports.createBook = async (req, res) => {
     }
 };
 
-// Add a book to the database
-const addBook = (book) => {
-    return new Promise((resolve, reject) => {
-        db.query(
-            'INSERT INTO bookdb.book (book_id, title, price, publication_date, format_type, language_type, publisher_id, sup_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [
-                book.book_id,
-                book.title,
-                book.price,
-                book.publication_date,
-                book.format_type,
-                book.language_type,
-                book.publisher_id,
-                book.sup_id
-            ],
-            (error, results) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(results);
-                }
-            }
-        );
+exports.getAllBooks = (req, res) => {
+    db.query('SELECT * FROM bookdb.book', (error, results) => {
+        if (error) {
+            console.log('Error:', error);
+            res.status(500).send('Internal server error');
+        } else {
+            console.log('Books:', results);
+            res.status(200).json(results);
+        }
     });
 };
+

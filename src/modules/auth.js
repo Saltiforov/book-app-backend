@@ -5,14 +5,14 @@ const secretKey = 'your-secret-key-here';
 const { v4: uuidv4 } = require('uuid');
 
 exports.createNewUser = async (req, res) => {
-    const { password, user_name, first_name, last_name, email, phone, address } = req.body;
+    const { password, user_name, last_name, email, phone, address } = req.body;
     const user_id = uuidv4();
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     db.query(
-        'INSERT INTO bookdb.user (user_id, user_name, first_name, last_name, phone, email, address) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [user_id, user_name, first_name, last_name, phone, email, address],
+        'INSERT INTO bookdb.user (user_id, user_name, last_name, phone, email, address, password) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [user_id, user_name, last_name, phone, email, address, hashedPassword],
         (error, results) => {
             if (error) {
                 console.log('error', error);
@@ -24,6 +24,7 @@ exports.createNewUser = async (req, res) => {
         }
     );
 };
+
 
 
 exports.login = async (req, res) => {
