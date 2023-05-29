@@ -62,7 +62,7 @@ exports.getLanguages = (req, res) => {
 
 
 exports.getAllBooks = (req, res) => {
-    const { language_type, format_type, searchQuery } = req.query;
+    const { language_type, format_type, searchQuery, min_price, max_price } = req.query;
 
     let query = 'SELECT * FROM bookdb.book WHERE 1 = 1';
     const queryParams = [];
@@ -83,6 +83,12 @@ exports.getAllBooks = (req, res) => {
         queryParams.push(searchQuery);
     }
 
+    if (min_price && max_price) {
+        query += ' AND price >= ? AND price <= ?';
+        queryParams.push(min_price);
+        queryParams.push(max_price);
+    }
+
     db.query(query, queryParams, (error, results) => {
         if (error) {
             console.log('Error:', error);
@@ -93,4 +99,5 @@ exports.getAllBooks = (req, res) => {
         }
     });
 };
+
 
