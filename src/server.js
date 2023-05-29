@@ -11,6 +11,8 @@ app.listen(config.serverPort, () => {
 const authModule = require('./modules/auth');
 const BookModule = require('./modules/book');
 const OrderModule = require('./modules/order');
+const SupplierModule = require('./modules/supplier');
+const UserModule = require('./modules/user');
 
 app.post('/api/login', authModule.login);
 
@@ -23,3 +25,7 @@ app.post('/api/order-item', OrderModule.addOrderItem);
 app.get('/api/orders', OrderModule.getAllOrderItems);
 
 app.get('/api/books', BookModule.getAllBooks);
+
+app.get('/api/suppliers', SupplierModule.getAllSuppliers);
+
+app.get('/api/users', UserModule.getAllUsers);
