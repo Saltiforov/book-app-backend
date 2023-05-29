@@ -101,3 +101,30 @@ exports.getAllBooks = (req, res) => {
 };
 
 
+// Add a book to the database
+const addBook = (book) => {
+    return new Promise((resolve, reject) => {
+        db.query(
+            'INSERT INTO bookdb.book (book_id, title, price, publication_date, format_type, language_type, user_id, sup_id, author) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [
+                book.book_id,
+                book.title,
+                book.price,
+                book.publication_date,
+                book.format_type,
+                book.language_type,
+                book.user_id,
+                book.sup_id,
+                book.author
+            ],
+            (error, results) => {
+                if (error) {
+                    console.log('Error:', error);
+                    reject(error);
+                } else {
+                    resolve(results);
+                }
+            }
+        );
+    });
+};
