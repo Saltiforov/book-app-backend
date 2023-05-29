@@ -6,42 +6,51 @@ exports.addOrderItem = async (req, res) => {
     const { first_name, last_name, email, phone, delivery_city, delivery_res, comment, books } = req.body;
     const order_id = uuidv4();
 
-    // Retrieve the book details using the book IDs
-    const bookDetails = await getBookDetails(books);
+    try {
+        // Retrieve the book details using the book IDs
+        const bookDetails = await getBookDetails(books);
 
-    const orderItem = {
-        order_id,
-        first_name,
-        last_name,
-        email,
-        phone,
-        delivery_city,
-        delivery_res,
-        comment,
-        books: bookDetails
-    };
+        const orderItem = {
+            order_id,
+            first_name,
+            last_name,
+            email,
+            phone,
+            delivery_city,
+            delivery_res,
+            comment,
+            books: bookDetails
+        };
 
-    db.query(
-        'INSERT INTO bookdb.order_item (order_id, first_name, last_name, email, phone, delivery_city, delivery_res, comment, books) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [orderItem.order_id, orderItem.first_name, orderItem.last_name, orderItem.email, orderItem.phone, orderItem.delivery_city, orderItem.delivery_res, orderItem.comment, JSON.stringify(orderItem.books)],
-        (error, results) => {
-            if (error) {
-                console.log('Error:', error);
-                res.status(500).send('Internal server error');
-            } else {
-                console.log('Order item added successfully');
-                res.status(200).send('Order item added successfully');
+        db.query(
+            'INSERT INTO bookdb.order_item (order_id, first_name, last_name, email, phone, delivery_city, delivery_res, comment, books) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [orderItem.order_id, orderItem.first_name, orderItem.last_name, orderItem.email, orderItem.phone, orderItem.delivery_city, orderItem.delivery_res, orderItem.comment, JSON.stringify(orderItem.books)],
+            (error, results) => {
+                if (error) {
+                    console.log('Error:', error);
+                    res.status(500).send('Internal server error');
+                } else {
+                    console.log('Order item added successfully');
+                    res.status(200).send('Order item added successfully');
+                }
             }
-        }
-    );
+        );
+    } catch (error) {
+        console.log('Error:', error);
+        res.status(500).send('Internal server error');
+    }
 };
 
 // Retrieve the book details using the book IDs
 const getBookDetails = async (bookIds) => {
     const books = [];
     for (const bookId of bookIds) {
-        const book = await getBookById(bookId);
-        books.push(book);
+        try {
+            const book = await getBookById(bookId);
+            books.push(book);
+        } catch (error) {
+            console.log('Error:', error);
+        }
     }
     return books;
 };
