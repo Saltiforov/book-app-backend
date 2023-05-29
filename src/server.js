@@ -29,3 +29,5 @@ app.get('/api/books', BookModule.getAllBooks);
 app.get('/api/suppliers', SupplierModule.getAllSuppliers);
 
 app.get('/api/users', UserModule.getAllUsers);
+
+app.get('/api/languages', BookModule.getLanguages);
