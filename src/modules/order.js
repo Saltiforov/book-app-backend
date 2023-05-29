@@ -79,13 +79,20 @@ const getBookById = (bookId) => {
 
 // Get all order items
 exports.getAllOrderItems = (req, res) => {
-    db.query('SELECT * FROM order_item', (error, results) => {
+    db.query('SELECT * FROM bookdb.order_item', (error, results) => {
         if (error) {
             console.log('Error:', error);
             res.status(500).send('Internal server error');
         } else {
-            console.log('Order items:', results);
-            res.status(200).json(results);
+            const parsedResults = results.map((item) => {
+                return {
+                    ...item,
+                    books: JSON.parse(item.books)
+                };
+            });
+
+            console.log('Parsed order items:', parsedResults);
+            res.status(200).json(parsedResults);
         }
     });
 };
