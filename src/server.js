@@ -29,7 +29,7 @@ app.get('/api/books', BookModule.getAllBooks);
 
 app.put('/api/order-item/:orderId', OrderModule.editOrderItem);
 
-app.put('/api/order-item/:bookId', BookModule.editBook);
+app.put('/api/books/:bookId', BookModule.editBook);
 
 app.get('/api/suppliers', SupplierModule.getAllSuppliers);
 
