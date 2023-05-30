@@ -17,7 +17,7 @@ exports.createBook = async (req, res) => {
             price,
             publication_date,
             format_type,
-            language_type,
+            language_type: language_type.code,
             user_id,
             sup_id,
             author
@@ -32,6 +32,7 @@ exports.createBook = async (req, res) => {
         res.status(500).send('Internal server error');
     }
 };
+
 
 // Check if the supplier exists
 const checkSupplierExists = (sup_id) => {
