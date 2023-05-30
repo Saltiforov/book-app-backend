@@ -26,6 +26,8 @@ app.get('/api/orders', OrderModule.getAllOrderItems);
 
 app.get('/api/books', BookModule.getAllBooks);
 
+app.put('/api/order-item', OrderModule.editOrderItem);
+
 app.get('/api/suppliers', SupplierModule.getAllSuppliers);
 
 app.get('/api/users', UserModule.getAllUsers);

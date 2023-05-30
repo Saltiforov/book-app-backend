@@ -36,7 +36,7 @@ exports.createBook = async (req, res) => {
 // Check if the supplier exists
 const checkSupplierExists = (sup_id) => {
     return new Promise((resolve, reject) => {
-        db.query('SELECT sup_id FROM supplier WHERE sup_id = ?', [sup_id], (error, results) => {
+        db.query('SELECT sup_id FROM bookdb.supplier WHERE sup_id = ?', [sup_id], (error, results) => {
             if (error) {
                 console.log('Error:', error);
                 reject(error);

@@ -3,12 +3,12 @@ const { v4: uuidv4 } = require('uuid');
 
 // Add a new order item
 exports.addOrderItem = async (req, res) => {
-    const { first_name, last_name, email, phone, delivery_city, delivery_res, comment, books } = req.body;
+    const { first_name, last_name, email, phone, delivery_city, delivery_res, comment, searchQuery } = req.body;
     const order_id = uuidv4();
 
     try {
-        // Retrieve the book details using the book IDs
-        const bookDetails = await getBookDetails(books);
+        // Retrieve the book details using the search query
+        const bookDetails = await searchBooks(searchQuery);
 
         const orderItem = {
             order_id,
@@ -39,6 +39,64 @@ exports.addOrderItem = async (req, res) => {
         console.log('Error:', error);
         res.status(500).send('Internal server error');
     }
+};
+
+// Edit an order item
+exports.editOrderItem = async (req, res) => {
+    const { order_id, first_name, last_name, email, phone, delivery_city, delivery_res, comment, books, user_id } = req.body;
+
+    try {
+        // Retrieve the book details using the book IDs
+        const bookDetails = await getBookDetails(books);
+
+        const updatedOrderItem = {
+            order_id,
+            first_name,
+            last_name,
+            email,
+            phone,
+            delivery_city,
+            delivery_res,
+            comment,
+            books: bookDetails,
+            user_id
+        };
+
+        db.query(
+            'UPDATE bookdb.order_item SET first_name = ?, last_name = ?, email = ?, phone = ?, delivery_city = ?, delivery_res = ?, comment = ?, books = ?, user_id = ? WHERE order_id = ?',
+            [updatedOrderItem.first_name, updatedOrderItem.last_name, updatedOrderItem.email, updatedOrderItem.phone, updatedOrderItem.delivery_city, updatedOrderItem.delivery_res, updatedOrderItem.comment, JSON.stringify(updatedOrderItem.books), updatedOrderItem.user_id, updatedOrderItem.order_id],
+            (error, results) => {
+                if (error) {
+                    console.log('Error:', error);
+                    res.status(500).send('Internal server error');
+                } else {
+                    console.log('Order item updated successfully');
+                    res.status(200).send('Order item updated successfully');
+                }
+            }
+        );
+    } catch (error) {
+        console.log('Error:', error);
+        res.status(500).send('Internal server error');
+    }
+};
+
+
+// Search books by name or ID
+const searchBooks = (searchQuery) => {
+    return new Promise((resolve, reject) => {
+        db.query(
+            'SELECT * FROM bookdb.book WHERE name = ? OR id = ?',
+            [searchQuery, searchQuery],
+            (error, results) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(results);
+                }
+            }
+        );
+    });
 };
 
 // Retrieve the book details using the book IDs
@@ -77,9 +135,17 @@ const getBookById = (bookId) => {
     });
 };
 
-// Get all order items
+// Get all order items with search functionality
 exports.getAllOrderItems = (req, res) => {
-    db.query('SELECT * FROM bookdb.order_item', (error, results) => {
+    const { search } = req.query;
+    let query = 'SELECT * FROM bookdb.order_item';
+
+    if (search) {
+        // Modify the query to include the search criteria
+        query += ` WHERE first_name LIKE '%${search}%' OR last_name LIKE '%${search}%'`;
+    }
+
+    db.query(query, (error, results) => {
         if (error) {
             console.log('Error:', error);
             res.status(500).send('Internal server error');
