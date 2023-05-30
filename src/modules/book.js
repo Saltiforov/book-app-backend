@@ -67,8 +67,11 @@ exports.editBook = async (req, res) => {
 
         await updateBook(id, updatedBook);
 
+        // Fetch the updated book from the database
+        const updatedItem = await getBookById(id);
+
         console.log('Book updated successfully');
-        res.status(200).send('Book updated successfully');
+        res.status(200).json(updatedItem); // Send the updated book item in the response
     } catch (error) {
         console.log('Error:', error);
         res.status(500).send('Internal server error');

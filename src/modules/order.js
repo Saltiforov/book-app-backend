@@ -40,13 +40,18 @@ exports.addOrderItem = async (req, res) => {
     }
 };
 
-// Edit an order item
 exports.editOrderItem = async (req, res) => {
     const { order_id, first_name, last_name, email, phone, delivery_city, delivery_res, comment, books, user_id } = req.body;
 
     try {
         // Retrieve the book details using the book IDs
         const bookDetails = await getBookDetails(books);
+
+        // Check if book details are retrieved successfully
+        if (!bookDetails) {
+            res.status(400).send('Invalid book details');
+            return;
+        }
 
         const updatedOrderItem = {
             order_id,
@@ -61,24 +66,65 @@ exports.editOrderItem = async (req, res) => {
             user_id
         };
 
-        db.query(
-            'UPDATE bookdb.order_item SET first_name = ?, last_name = ?, email = ?, phone = ?, delivery_city = ?, delivery_res = ?, comment = ?, books = ?, user_id = ? WHERE order_id = ?',
-            [updatedOrderItem.first_name, updatedOrderItem.last_name, updatedOrderItem.email, updatedOrderItem.phone, updatedOrderItem.delivery_city, updatedOrderItem.delivery_res, updatedOrderItem.comment, JSON.stringify(updatedOrderItem.books), updatedOrderItem.user_id, updatedOrderItem.order_id],
-            (error, results) => {
-                if (error) {
-                    console.log('Error:', error);
-                    res.status(500).send('Internal server error');
-                } else {
-                    console.log('Order item updated successfully');
-                    res.status(200).send('Order item updated successfully');
-                }
-            }
-        );
+        // Update the order item in the database
+        await updateOrderItem(order_id, updatedOrderItem);
+
+        // Retrieve the updated order item from the database
+        const updatedItem = await getOrderItem(order_id);
+
+        console.log('Order item updated successfully');
+        res.status(200).json(updatedItem); // Send the updated order item in the response
     } catch (error) {
         console.log('Error:', error);
         res.status(500).send('Internal server error');
     }
 };
+
+function getOrderItem(orderId) {
+    return new Promise((resolve, reject) => {
+        db.query('SELECT * FROM bookdb.order_item WHERE order_id = ?', [orderId], (error, results) => {
+            if (error) {
+                reject(error);
+            } else {
+                if (results.length === 0) {
+                    resolve(null); // Order item not found
+                } else {
+                    const orderItem = results[0];
+                    orderItem.books = JSON.parse(orderItem.books); // Parse JSON string back into an array
+                    resolve(orderItem);
+                }
+            }
+        });
+    });
+}
+
+function updateOrderItem(orderId, updatedOrderItem) {
+    return new Promise((resolve, reject) => {
+        db.query(
+            'UPDATE bookdb.order_item SET first_name = ?, last_name = ?, email = ?, phone = ?, delivery_city = ?, delivery_res = ?, comment = ?, books = ?, user_id = ? WHERE order_id = ?',
+            [
+                updatedOrderItem.first_name,
+                updatedOrderItem.last_name,
+                updatedOrderItem.email,
+                updatedOrderItem.phone,
+                updatedOrderItem.delivery_city,
+                updatedOrderItem.delivery_res,
+                updatedOrderItem.comment,
+                JSON.stringify(updatedOrderItem.books),
+                updatedOrderItem.user_id,
+                orderId
+            ],
+            (error, results) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve();
+                }
+            }
+        );
+    });
+}
+
 
 
 // Search books by name or ID
