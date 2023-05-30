@@ -42,3 +42,5 @@ app.get('/api/sales-reports', ReportsModule.getSalesReports);
 app.get('/api/supplier-report', ReportsModule.getBooksPerSupplierReport);
 
 app.delete('/api/books/:bookId', BookModule.deleteBook);
+
+app.delete('/api/order-item/:orderId', OrderModule.deleteOrderItem);

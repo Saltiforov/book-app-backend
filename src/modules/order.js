@@ -207,3 +207,36 @@ exports.getAllOrderItems = (req, res) => {
         }
     });
 };
+exports.deleteOrderItem = async (req, res) => {
+    const { orderId } = req.params;
+
+    try {
+        // Check if the order item exists
+        const existingOrderItem = await getOrderItem(orderId);
+        if (!existingOrderItem) {
+            res.status(404).send('Order item not found');
+            return;
+        }
+
+        // Delete the order item from the database
+        await deleteOrderItemById(orderId);
+
+        console.log('Order item deleted successfully');
+        res.status(200).send('Order item deleted successfully');
+    } catch (error) {
+        console.log('Error:', error);
+        res.status(500).send('Internal server error');
+    }
+}
+
+function deleteOrderItemById(orderItemId) {
+    return new Promise((resolve, reject) => {
+        db.query('DELETE FROM bookdb.order_item WHERE order_id = ?', [orderItemId], (error, results) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve();
+            }
+        });
+    });
+}
