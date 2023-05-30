@@ -35,11 +35,11 @@ exports.createBook = async (req, res) => {
 };
 
 exports.editBook = async (req, res) => {
-    const { id } = req.params;
+    const { bookId } = req.params;
     const { title, price, publication_date, format_type, language_type, user_id, sup_id, author, available } = req.body;
     try {
         // Check if the book exists
-        const existingBook = await getBookById(id);
+        const existingBook = await getBookById(bookId);
         if (!existingBook) {
             res.status(404).send('Book not found');
             return;
@@ -62,13 +62,13 @@ exports.editBook = async (req, res) => {
             user_id: user_id || existingBook.user_id,
             sup_id: sup_id || existingBook.sup_id,
             author: author || existingBook.author,
-            available: available !== undefined ? available : existingBook.available
+            available: available || false
         };
 
-        await updateBook(id, updatedBook);
+        await updateBook(bookId, updatedBook);
 
         // Fetch the updated book from the database
-        const updatedItem = await getBookById(id);
+        const updatedItem = await getBookById(bookId);
 
         console.log('Book updated successfully');
         res.status(200).json(updatedItem); // Send the updated book item in the response
@@ -77,6 +77,49 @@ exports.editBook = async (req, res) => {
         res.status(500).send('Internal server error');
     }
 };
+
+const getBookById = async (id) => {
+    return new Promise((resolve, reject) => {
+        const query = 'SELECT * FROM bookdb.book WHERE book_id = ?';
+
+        db.query(query, [id], (error, results) => {
+            if (error) {
+                reject(error);
+            } else {
+                // Extract the first (and only) book item from the results
+                const book = results[0];
+                resolve(book);
+            }
+        });
+    });
+};
+
+const updateBook = async (id, updatedBook) => {
+    return new Promise((resolve, reject) => {
+        const query = 'UPDATE bookdb.book SET title = ?, price = ?, publication_date = ?, format_type = ?, language_type = ?, user_id = ?, sup_id = ?, author = ?, available = ? WHERE book_id = ?';
+        const values = [
+            updatedBook.title,
+            updatedBook.price,
+            updatedBook.publication_date,
+            updatedBook.format_type,
+            updatedBook.language_type,
+            updatedBook.user_id,
+            updatedBook.sup_id,
+            updatedBook.author,
+            updatedBook.available,
+            id
+        ];
+
+        db.query(query, values, (error, results) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve();
+            }
+        });
+    });
+};
+
 
 // Check if the supplier exists
 const checkSupplierExists = (sup_id) => {
