@@ -13,6 +13,7 @@ const BookModule = require('./modules/book');
 const OrderModule = require('./modules/order');
 const SupplierModule = require('./modules/supplier');
 const UserModule = require('./modules/user');
+const ReportsModule = require('./modules/reports');
 
 app.post('/api/login', authModule.login);
 
@@ -26,10 +27,18 @@ app.get('/api/orders', OrderModule.getAllOrderItems);
 
 app.get('/api/books', BookModule.getAllBooks);
 
-app.put('/api/order-item', OrderModule.editOrderItem);
+app.put('/api/order-item/:orderId', OrderModule.editOrderItem);
+
+app.put('/api/order-item/:bookId', BookModule.editBook);
 
 app.get('/api/suppliers', SupplierModule.getAllSuppliers);
 
 app.get('/api/users', UserModule.getAllUsers);
 
 app.get('/api/languages', BookModule.getLanguages);
+
+app.get('/api/sales-reports', ReportsModule.getSalesReports);
+
+app.get('/api/supplier-report', ReportsModule.getBooksPerSupplierReport);
+
+app.delete('/api/books/:bookId', BookModule.deleteBook);

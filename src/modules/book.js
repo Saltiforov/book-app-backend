@@ -20,7 +20,8 @@ exports.createBook = async (req, res) => {
             language_type: language_type.code,
             user_id,
             sup_id,
-            author
+            author,
+            available: true
         };
 
         await addBook(book);
@@ -33,6 +34,46 @@ exports.createBook = async (req, res) => {
     }
 };
 
+exports.editBook = async (req, res) => {
+    const { id } = req.params;
+    const { title, price, publication_date, format_type, language_type, user_id, sup_id, author, available } = req.body;
+    try {
+        // Check if the book exists
+        const existingBook = await getBookById(id);
+        if (!existingBook) {
+            res.status(404).send('Book not found');
+            return;
+        }
+
+        // Check if the supplier exists
+        const isSupplierExists = await checkSupplierExists(sup_id);
+        if (!isSupplierExists) {
+            res.status(400).send('Invalid supplier ID');
+            return;
+        }
+
+        const updatedBook = {
+            ...existingBook,
+            title: title || existingBook.title,
+            price: price || existingBook.price,
+            publication_date: publication_date || existingBook.publication_date,
+            format_type: format_type || existingBook.format_type,
+            language_type: language_type ? language_type.code : existingBook.language_type,
+            user_id: user_id || existingBook.user_id,
+            sup_id: sup_id || existingBook.sup_id,
+            author: author || existingBook.author,
+            available: available !== undefined ? available : existingBook.available
+        };
+
+        await updateBook(id, updatedBook);
+
+        console.log('Book updated successfully');
+        res.status(200).send('Book updated successfully');
+    } catch (error) {
+        console.log('Error:', error);
+        res.status(500).send('Internal server error');
+    }
+};
 
 // Check if the supplier exists
 const checkSupplierExists = (sup_id) => {
@@ -61,6 +102,19 @@ exports.getLanguages = (req, res) => {
     res.status(200).json(languages);
 };
 
+exports.deleteBook = async (req, res) => {
+    const bookId = req.params.bookId;
+
+    db.query('DELETE FROM bookdb.book WHERE book_id = ?', [bookId], (error, results) => {
+        if (error) {
+            console.log('Error:', error);
+            res.status(500).send('Internal server error');
+        } else {
+            console.log('Book deleted successfully');
+            res.status(200).send('Book deleted successfully');
+        }
+    });
+}
 
 exports.getAllBooks = (req, res) => {
     const { language_type, format_type, searchQuery, min_price, max_price } = req.query;
