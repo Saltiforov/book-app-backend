@@ -1,14 +1,13 @@
 const db = require('../db');
 const { v4: uuidv4 } = require('uuid');
 
-// Add a new order item
 exports.addOrderItem = async (req, res) => {
-    const { first_name, last_name, email, phone, delivery_city, delivery_res, comment, searchQuery } = req.body;
+    const { first_name, last_name, email, phone, delivery_city, delivery_res, comment, books } = req.body;
     const order_id = uuidv4();
 
     try {
-        // Retrieve the book details using the search query
-        const bookDetails = await searchBooks(searchQuery);
+        // Retrieve the book details using the book IDs
+        const bookDetails = await getBookDetails(books);
 
         const orderItem = {
             order_id,
