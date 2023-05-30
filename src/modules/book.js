@@ -163,7 +163,7 @@ exports.deleteBook = async (req, res) => {
 }
 
 exports.getAllBooks = (req, res) => {
-    const { language_type, format_type, searchQuery, min_price, max_price } = req.query;
+    const { language_type, format_type, searchQuery, min_price, max_price, available } = req.query;
 
     let query = 'SELECT * FROM bookdb.book WHERE 1 = 1';
     const queryParams = [];
@@ -190,6 +190,10 @@ exports.getAllBooks = (req, res) => {
         queryParams.push(max_price);
     }
 
+    if (available === 'true') {
+        query += ' AND available IS NOT NULL';
+    }
+
     db.query(query, queryParams, (error, results) => {
         if (error) {
             console.log('Error:', error);
@@ -200,6 +204,7 @@ exports.getAllBooks = (req, res) => {
         }
     });
 };
+
 
 
 
