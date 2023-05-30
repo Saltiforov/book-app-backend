@@ -79,7 +79,7 @@ exports.getAllBooks = (req, res) => {
     }
 
     if (searchQuery) {
-        query += ' AND (name LIKE ? OR id = ?)';
+        query += ' AND (title LIKE ? OR book_id = ?)';
         queryParams.push(`%${searchQuery}%`);
         queryParams.push(searchQuery);
     }
@@ -100,6 +100,7 @@ exports.getAllBooks = (req, res) => {
         }
     });
 };
+
 
 
 // Add a book to the database
