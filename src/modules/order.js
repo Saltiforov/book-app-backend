@@ -86,7 +86,7 @@ exports.editOrderItem = async (req, res) => {
 const searchBooks = (searchQuery) => {
     return new Promise((resolve, reject) => {
         db.query(
-            'SELECT * FROM bookdb.book WHERE name = ? OR id = ?',
+            'SELECT * FROM bookdb.book WHERE title = ? OR book_id = ?',
             [searchQuery, searchQuery],
             (error, results) => {
                 if (error) {
