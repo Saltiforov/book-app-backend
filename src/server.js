@@ -7,7 +7,10 @@ console.log('config', config);
 app.listen(config.serverPort, () => {
     console.log(`Server started on port ${config.serverPort}`);
 });
+const multer = require('multer');
 
+const storage = multer.memoryStorage();
+const upload = multer({storage});
 const authModule = require('./modules/auth');
 const BookModule = require('./modules/book');
 const OrderModule = require('./modules/order');
@@ -19,7 +22,7 @@ app.post('/api/login', authModule.login);
 
 app.post('/api/signup', authModule.createNewUser);
 
-app.post('/api/new-book', BookModule.createBook);
+app.post('/api/new-book', upload.single('image'), BookModule.createBook);
 
 app.post('/api/order-item', OrderModule.addOrderItem);
 

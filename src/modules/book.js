@@ -3,25 +3,22 @@ const { v4: uuidv4 } = require('uuid');
 
 exports.createBook = async (req, res) => {
     const { title, price, publication_date, format_type, language_type, user_id, sup_id, author } = req.body;
+    console.log('req.file.buffer', req.file.buffer);
     try {
-        // Check if the supplier exists
-        const isSupplierExists = await checkSupplierExists(sup_id);
-        if (!isSupplierExists) {
-            res.status(400).send('Invalid supplier ID');
-            return;
-        }
-
+        const languageTypeObj = JSON.parse(language_type);
+        console.log('languageTypeObj', languageTypeObj);
         const book = {
             book_id: uuidv4(),
             title,
             price,
             publication_date,
             format_type,
-            language_type: language_type.code,
+            language_type: languageTypeObj.code,
             user_id,
             sup_id,
             author,
-            available: true
+            available: true,
+            image: req.file.buffer // Assuming the file is stored in a buffer
         };
 
         await addBook(book);
@@ -199,20 +196,33 @@ exports.getAllBooks = (req, res) => {
             console.log('Error:', error);
             res.status(500).send('Internal server error');
         } else {
-            console.log('Books:', results);
-            res.status(200).json(results);
+            // Map the results and check if the image exists
+            const booksWithImage = results.map((book) => {
+                const bookWithImage = { ...book };
+                console.log('TEST BOOK BODY', book);
+                if (book.image) {
+                    // Assuming the image is stored as a Blob type
+                    const imageBuffer = Buffer.from(book.image, 'base64');
+                    bookWithImage.image = imageBuffer.toString('base64');
+                }
+                return bookWithImage;
+            });
+
+            console.log('Books:', booksWithImage);
+            res.status(200).json(booksWithImage);
         }
     });
 };
 
 
-
-
 // Add a book to the database
 const addBook = (book) => {
     return new Promise((resolve, reject) => {
+        // Convert the image data to a Buffer
+        const imageBuffer = Buffer.from(book.image, 'base64');
+
         db.query(
-            'INSERT INTO bookdb.book (book_id, title, price, publication_date, format_type, language_type, user_id, sup_id, author) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO bookdb.book (book_id, title, price, publication_date, format_type, language_type, user_id, sup_id, author, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
                 book.book_id,
                 book.title,
@@ -222,7 +232,8 @@ const addBook = (book) => {
                 book.language_type,
                 book.user_id,
                 book.sup_id,
-                book.author
+                book.author,
+                imageBuffer // Store the image as a Buffer
             ],
             (error, results) => {
                 if (error) {
