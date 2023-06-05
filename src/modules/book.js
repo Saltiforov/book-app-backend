@@ -182,7 +182,9 @@ exports.getAllBooks = (req, res) => {
     }
 
     if (available === 'true') {
-        query += ' AND available IS NOT NULL';
+        query += ' AND available = 1';
+    } else if (available === 'false') {
+        query += ' AND available = 0';
     }
 
     db.query(query, queryParams, (error, results) => {
