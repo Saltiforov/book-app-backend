@@ -39,19 +39,43 @@ exports.addOrderItem = async (req, res) => {
         res.status(500).send('Internal server error');
     }
 };
+const delivery_cities1 = [
+    { name: 'Київ', code: 'Kyiv' },
+    { name: 'Харків', code: 'Kharkiv' },
+    { name: 'Одеса', code: 'Odesa' },
+    { name: 'Суми', code: 'Sumy' },
+    { name: 'Кременчук', code: 'Kremenchuk' },
+    { name: 'Ужгород', code: 'Uzhhorod' },
+    { name: 'Бровари', code: 'Breweries' },
+    { name: 'Рівне', code: 'Rivne' },
+]
+const delivery_res1 = [
+    { name: 'Відділення №1', code: 'number1' },
+    { name: 'Відділення №2', code: 'number2' },
+    { name: 'Відділення №3', code: 'number3' },
+    { name: 'Відділення №4', code: 'number4' },
+    { name: 'Відділення №5', code: 'number5' },
+    { name: 'Відділення №6', code: 'number6' },
+    { name: 'Відділення №7', code: 'number7' },
+    { name: 'Відділення №8', code: 'number8' },
+]
 
 exports.editOrderItem = async (req, res) => {
-    const { order_id, first_name, last_name, email, phone, delivery_city, delivery_res, comment, books, user_id } = req.body;
+    const { order_id, first_name, last_name, email, phone, delivery_city, delivery_res, comment, user_id } = req.body;
 
     try {
-        // Retrieve the book details using the book IDs
-        const bookDetails = await getBookDetails(books);
+        // Retrieve the existing order item from the database
+        const existingOrderItem = await getOrderItem(order_id);
 
-        // Check if book details are retrieved successfully
-        if (!bookDetails) {
-            res.status(400).send('Invalid book details');
+        // Check if the order item exists
+        if (!existingOrderItem) {
+            res.status(404).send('Order item not found');
             return;
         }
+        const delivery_city1 = delivery_city.code
+        const delivery_res1 = delivery_res.code
+        // Use the existing books array from the database
+        const existingBooks = existingOrderItem.books;
 
         const updatedOrderItem = {
             order_id,
@@ -59,10 +83,10 @@ exports.editOrderItem = async (req, res) => {
             last_name,
             email,
             phone,
-            delivery_city,
-            delivery_res,
+            delivery_city: delivery_city1,
+            delivery_res: delivery_res1,
             comment,
-            books: bookDetails,
+            books: existingBooks, // Use the existing books array
             user_id
         };
 
@@ -202,7 +226,6 @@ exports.getAllOrderItems = (req, res) => {
                 };
             });
 
-            console.log('Parsed order items:', parsedResults);
             res.status(200).json(parsedResults);
         }
     });

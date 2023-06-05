@@ -3,10 +3,9 @@ const { v4: uuidv4 } = require('uuid');
 
 exports.createBook = async (req, res) => {
     const { title, price, publication_date, format_type, language_type, user_id, sup_id, author } = req.body;
-    console.log('req.file.buffer', req.file.buffer);
+
     try {
         const languageTypeObj = JSON.parse(language_type);
-        console.log('languageTypeObj', languageTypeObj);
         const book = {
             book_id: uuidv4(),
             title,
@@ -18,12 +17,11 @@ exports.createBook = async (req, res) => {
             sup_id,
             author,
             available: true,
-            image: req.file.buffer // Assuming the file is stored in a buffer
+            image: req.file.buffer
         };
 
         await addBook(book);
 
-        console.log('Book created successfully');
         res.status(200).send('Book created successfully');
     } catch (error) {
         console.log('Error:', error);
@@ -35,14 +33,12 @@ exports.editBook = async (req, res) => {
     const { bookId } = req.params;
     const { title, price, publication_date, format_type, language_type, user_id, sup_id, author, available } = req.body;
     try {
-        // Check if the book exists
         const existingBook = await getBookById(bookId);
         if (!existingBook) {
             res.status(404).send('Book not found');
             return;
         }
 
-        // Check if the supplier exists
         const isSupplierExists = await checkSupplierExists(sup_id);
         if (!isSupplierExists) {
             res.status(400).send('Invalid supplier ID');
@@ -55,7 +51,7 @@ exports.editBook = async (req, res) => {
             price: price || existingBook.price,
             publication_date: publication_date || existingBook.publication_date,
             format_type: format_type || existingBook.format_type,
-            language_type: language_type ? language_type.code : existingBook.language_type,
+            language_type: language_type ? language_type : existingBook.language_type,
             user_id: user_id || existingBook.user_id,
             sup_id: sup_id || existingBook.sup_id,
             author: author || existingBook.author,
@@ -64,11 +60,9 @@ exports.editBook = async (req, res) => {
 
         await updateBook(bookId, updatedBook);
 
-        // Fetch the updated book from the database
         const updatedItem = await getBookById(bookId);
 
-        console.log('Book updated successfully');
-        res.status(200).json(updatedItem); // Send the updated book item in the response
+        res.status(200).json(updatedItem);
     } catch (error) {
         console.log('Error:', error);
         res.status(500).send('Internal server error');
@@ -199,7 +193,6 @@ exports.getAllBooks = (req, res) => {
             // Map the results and check if the image exists
             const booksWithImage = results.map((book) => {
                 const bookWithImage = { ...book };
-                console.log('TEST BOOK BODY', book);
                 if (book.image) {
                     // Assuming the image is stored as a Blob type
                     const imageBuffer = Buffer.from(book.image, 'base64');
